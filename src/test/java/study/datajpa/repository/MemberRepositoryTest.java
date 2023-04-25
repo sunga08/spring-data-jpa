@@ -30,13 +30,15 @@ public class MemberRepositoryTest {
     /**
      * MemberRepository, TeamRepository, EntityManager 모두 같은 entityManager 사용
      */
-    @Autowired MemberRepository memberRepository;
-    @Autowired TeamRepository teamRepository;
+    @Autowired
+    MemberRepository memberRepository;
+    @Autowired
+    TeamRepository teamRepository;
     @PersistenceContext
     EntityManager em;
 
     @Test
-    public void testMember(){
+    public void testMember() {
         Member member = new Member("memberA");
         Member savedMember = memberRepository.save(member);
 
@@ -48,7 +50,7 @@ public class MemberRepositoryTest {
     }
 
     @Test
-    public void basicCRUD(){
+    public void basicCRUD() {
         Member member1 = new Member("member1");
         Member member2 = new Member("member2");
         memberRepository.save(member1);
@@ -127,7 +129,7 @@ public class MemberRepositoryTest {
         memberRepository.save(m2);
 
         List<String> result = memberRepository.findUsernameList();
-        for (String s : result){
+        for (String s : result) {
             System.out.println("s = " + s);
         }
 
@@ -144,7 +146,7 @@ public class MemberRepositoryTest {
 
 
         List<MemberDto> result = memberRepository.findMemberDto();
-        for (MemberDto dto : result){
+        for (MemberDto dto : result) {
             System.out.println("dto = " + dto);
         }
 
@@ -157,8 +159,8 @@ public class MemberRepositoryTest {
         memberRepository.save(m1);
         memberRepository.save(m2);
 
-        List<Member> result = memberRepository.findByNames(Arrays.asList("AAA","BBB"));
-        for (Member member : result){
+        List<Member> result = memberRepository.findByNames(Arrays.asList("AAA", "BBB"));
+        for (Member member : result) {
             System.out.println("member = " + member);
         }
     }
@@ -251,5 +253,33 @@ public class MemberRepositoryTest {
             System.out.println("member.teamClass = " + member.getTeam().getClass());
             System.out.println("member.team = " + member.getTeam().getName());
         }
+    }
+
+    @Test
+    public void queryHint() {
+        //given
+        Member member = new Member("member1", 10);
+        memberRepository.save(member);
+        em.flush();
+        em.clear();
+
+        //when
+        Member findMember = memberRepository.findReadOnlyByUsername("member1");
+        findMember.setUsername("member2"); //변경
+
+        em.flush(); //변경 감지
+    }
+
+    @Test
+    public void lock() {
+        //given
+        Member member = new Member("member1", 10);
+        memberRepository.save(member);
+        em.flush();
+        em.clear();
+
+        //when
+        List<Member> result = memberRepository.findLockByUsername("member1");
+
     }
 }
